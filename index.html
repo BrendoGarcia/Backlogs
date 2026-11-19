@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0c1426">
+  <meta name="description" content="Backlog Studio — acompanhe seus projetos, tarefas, prioridades e histórico, localmente no navegador.">
+  <title>Backlog Studio — Gestão de projetos</title>
+  <link rel="icon" href="./assets/icon.svg" type="image/svg+xml">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <div id="app" class="app">
+    <aside id="sidebar" class="sidebar" aria-label="Navegação principal">
+      <div class="brand"><div class="brand-icon">▦</div><div><strong>BACKLOG<span>STUDIO</span></strong><small>Seu centro de projetos</small></div></div>
+      <div class="workspace-label">ESPAÇO DE TRABALHO <span class="status-dot"></span></div>
+      <nav class="main-nav" aria-label="Seções">
+        <button class="nav-item active" data-action="navigate" data-view="dashboard"><span class="nav-icon">◫</span>Visão geral</button>
+        <button class="nav-item" data-action="navigate" data-view="board"><span class="nav-icon">▥</span>Quadro Kanban</button>
+        <button class="nav-item" data-action="navigate" data-view="list"><span class="nav-icon">☷</span>Backlog completo</button>
+        <button class="nav-item" data-action="navigate" data-view="calendar"><span class="nav-icon">▦</span>Calendário</button>
+        <button class="nav-item" data-action="navigate" data-view="activity"><span class="nav-icon">◷</span>Histórico de atividades</button>
+      </nav>
+      <div class="sidebar-project-heading"><span>MEUS PROJETOS</span><button class="tiny-icon-button" id="sidebarAddProject" title="Criar projeto" aria-label="Criar projeto">+</button></div>
+      <div class="project-nav" id="projectNav"></div>
+      <div class="sidebar-bottom">
+        <button class="nav-item" data-action="navigate" data-view="settings"><span class="nav-icon">⚙</span>Configurações</button>
+        <div class="storage-panel"><span class="storage-light">●</span><div><strong>Dados neste dispositivo</strong><small>Salvamento automático ativado</small></div></div>
+      </div>
+    </aside>
+    <div id="mobileBackdrop" class="mobile-backdrop" hidden></div>
+    <div class="workspace">
+      <header class="topbar">
+        <div class="header-left"><button id="menuToggle" class="icon-button mobile-menu" aria-label="Abrir menu">☰</button><div class="breadcrumb">Workspace <span>/</span> <b id="breadcrumbView">Visão geral</b></div></div>
+        <div class="header-actions"><span id="saveStatus" class="save-status"><span class="status-dot"></span> Salvo localmente</span><button id="backupTop" class="btn btn-ghost top-backup"><span>⇩</span> Backup</button><button id="themeToggle" class="icon-button" title="Alternar tema" aria-label="Alternar tema">☾</button><div class="avatar" title="Meu espaço">EU</div></div>
+      </header>
+      <main id="main" class="main-content" tabindex="-1"></main>
+    </div>
+  </div>
+
+  <dialog id="projectDialog" class="modal small-modal" aria-labelledby="projectModalTitle">
+    <form id="projectForm">
+      <div class="modal-head"><div><div class="eyebrow">PORTFÓLIO</div><h2 id="projectModalTitle">Novo projeto</h2></div><button type="button" class="icon-button close-dialog" aria-label="Fechar">×</button></div>
+      <div class="modal-content">
+        <div class="field"><label for="projectName">Nome do projeto *</label><input id="projectName" name="name" maxlength="85" required placeholder="Ex.: Dashboard de Performance"></div>
+        <div class="form-grid"><div class="field"><label for="projectKey">Identificador</label><input id="projectKey" name="key" maxlength="8" pattern="[A-Za-z0-9-]+" placeholder="Ex.: BI"></div><div class="field"><label for="projectColor">Cor do projeto</label><input id="projectColor" type="color" name="color" value="#2563eb"></div></div>
+        <div class="field"><label for="projectDescription">Descrição</label><textarea id="projectDescription" name="description" rows="3" maxlength="3000" placeholder="Objetivos e escopo do projeto"></textarea></div>
+        <div class="field"><label for="projectRepo">Repositório (opcional)</label><input id="projectRepo" name="repository" type="url" placeholder="https://github.com/usuario/repositorio"></div>
+      </div>
+      <div class="modal-footer"><button type="button" id="archiveProjectBtn" class="btn btn-danger-ghost" hidden>Arquivar projeto</button><div class="footer-spacer"></div><button type="button" class="btn btn-ghost close-dialog">Cancelar</button><button class="btn btn-primary" type="submit">Salvar projeto</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="itemDialog" class="modal item-modal" aria-labelledby="itemModalTitle">
+    <form id="itemForm">
+      <div class="modal-head"><div><div class="eyebrow" id="itemModalEyebrow">ITEM DO BACKLOG</div><h2 id="itemModalTitle">Novo item</h2></div><button type="button" class="icon-button close-dialog" aria-label="Fechar">×</button></div>
+      <div class="item-modal-layout"><div class="item-main-fields">
+        <div class="field"><label for="itemTitle">Título *</label><input id="itemTitle" name="title" maxlength="200" required placeholder="Ex.: Implementar autenticação"></div>
+        <div class="field"><label for="itemDescription">Descrição / critérios de aceite</label><textarea id="itemDescription" name="description" rows="6" maxlength="20000" placeholder="O que precisa ser feito? Como saber que está concluído?"></textarea></div>
+        <div class="form-grid">
+          <div class="field"><label for="itemProject">Projeto *</label><select id="itemProject" name="projectId" required></select></div>
+          <div class="field"><label for="itemStatus">Situação</label><select id="itemStatus" name="status"><option value="backlog">Backlog</option><option value="todo">A fazer</option><option value="doing">Em andamento</option><option value="review">Em revisão</option><option value="done">Concluído</option></select></div>
+          <div class="field"><label for="itemPriority">Prioridade</label><select id="itemPriority" name="priority"><option value="urgent">Crítica</option><option value="high">Alta</option><option value="medium" selected>Média</option><option value="low">Baixa</option></select></div>
+          <div class="field"><label for="itemType">Tipo</label><select id="itemType" name="type"><option value="feature">Funcionalidade</option><option value="task">Tarefa</option><option value="bug">Bug</option><option value="improvement">Melhoria</option><option value="research">Pesquisa</option></select></div>
+          <div class="field"><label for="itemStart">Data de início</label><input id="itemStart" name="startDate" type="date"></div>
+          <div class="field"><label for="itemDue">Prazo</label><input id="itemDue" name="dueDate" type="date"></div>
+          <div class="field"><label for="itemEstimate">Estimativa (horas)</label><input id="itemEstimate" name="estimate" type="number" min="0" step="0.5" max="100000" placeholder="0"></div>
+          <div class="field"><label for="itemSpent">Horas gastas</label><input id="itemSpent" name="spent" type="number" min="0" step="0.5" max="100000" placeholder="0"></div>
+          <div class="field"><label for="itemSprint">Sprint / ciclo</label><input id="itemSprint" name="sprint" maxlength="80" placeholder="Ex.: Sprint 01"></div>
+          <div class="field"><label for="itemAssignee">Responsável</label><input id="itemAssignee" name="assignee" maxlength="80" placeholder="Ex.: Eu"></div>
+        </div>
+        <div class="field"><label for="itemLabels">Etiquetas <small>(separadas por vírgula)</small></label><input id="itemLabels" name="labels" maxlength="500" placeholder="UI, API, dados"></div>
+        <div class="field"><label for="itemLink">Link de referência</label><input id="itemLink" name="link" type="url" placeholder="https://github.com/.../issues/1"></div>
+      </div><aside class="item-extra-fields"><section><div class="section-mini-heading"><h3>Checklist</h3><span id="checklistCount"></span></div><div id="itemChecklist" class="checklist"></div><div id="checklistAdd" class="inline-add"><input id="newChecklistText" placeholder="Novo passo..." maxlength="500"><button type="button" id="addChecklistBtn" class="btn btn-muted" title="Adicionar passo">+</button></div><small id="saveFirstChecklist" class="hint"></small></section><section><h3>Comentários / atualizações</h3><div id="itemComments" class="comments-list"></div><textarea id="newComment" rows="3" maxlength="5000" placeholder="Registre o que foi desenvolvido..."></textarea><button type="button" id="addCommentBtn" class="btn btn-muted full-width">Registrar atualização</button><small id="saveFirstComment" class="hint"></small></section><section><h3>Histórico deste item</h3><div id="itemHistory" class="item-history"></div></section></aside></div>
+      <div class="modal-footer"><button type="button" id="archiveItemBtn" class="btn btn-danger-ghost" hidden>Arquivar item</button><div class="footer-spacer"></div><button type="button" class="btn btn-ghost close-dialog">Fechar</button><button type="submit" class="btn btn-primary">Salvar alterações</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="confirmDialog" class="modal confirm-modal" aria-labelledby="confirmTitle"><div class="modal-head"><h2 id="confirmTitle">Confirmar ação</h2></div><p id="confirmText" class="confirm-text"></p><div class="modal-footer"><button id="confirmCancel" class="btn btn-ghost">Cancelar</button><button id="confirmAccept" class="btn btn-primary">Confirmar</button></div></dialog>
+  <input type="file" accept=".json,application/json" id="importInput" hidden>
+  <div id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="true"></div>
+</body>
+</html>
