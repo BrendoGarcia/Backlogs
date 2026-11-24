@@ -1,4 +1,4 @@
-const CACHE_NAME = 'backlog-studio-v1';
+const CACHE_NAME = 'backlog-studio-v2';
 const ASSETS = ['./', './index.html', './styles.css', './app.js', './assets/icon.svg', './manifest.webmanifest'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
