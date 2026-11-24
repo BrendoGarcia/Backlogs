@@ -15,3 +15,10 @@
 .card-status-picker{min-width:0;max-width:148px;flex:1;border:1px solid var(--line);background:var(--surface2);color:var(--text);border-radius:7px;padding:6px 4px;font-size:10px;cursor:pointer;}
 .card-status-picker:hover{border-color:var(--blue);}
 @media(max-width:600px){.board-column{height:clamp(330px,calc(100dvh - 290px),700px);} .board{scroll-snap-type:x proximity;}.board-column{scroll-snap-align:start;}}
+
+
+/* Contraste: as variáveis do tema estão em .app, então a cor herdada
+   também deve ser calculada dentro de .app (não apenas em body). */
+.app{color:var(--text);}
+.board-card .card-title{color:var(--text);}
+.board-card .card-title:hover{color:var(--blue);}
